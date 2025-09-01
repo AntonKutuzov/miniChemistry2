@@ -1,0 +1,7 @@
+build/
+minichemistry.egg-info/
+*__pycache__/
+docs/_build/
+*.ipynb_checkpoints/
+dist/
+.idea/
