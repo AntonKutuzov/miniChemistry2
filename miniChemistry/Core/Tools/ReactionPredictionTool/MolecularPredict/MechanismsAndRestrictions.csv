@@ -30,7 +30,7 @@ Water;SD;None
 Metal;nonmetal;SA;None
 nonmetal;nonmetal;SA;None
 Ternary salt;CD;None
-Base;None;CD;None
+Base;CD;None
 Ternary acid;CD;None
 base;Acidic oxide;CN;None
 Basic oxide;Ternary acid;CN;None

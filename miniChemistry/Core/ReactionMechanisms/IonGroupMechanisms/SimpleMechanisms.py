@@ -3,7 +3,7 @@ from miniChemistry.Core.Substances.convert import add_group, remove_group
 from typing import Tuple, List
 
 
-def _join_identical_ion(
+def _join_identical_ions(
         ig: IonGroup|Molecule
         ) -> IonGroup|Molecule:
 
@@ -81,7 +81,7 @@ def ionic_addition(
 
     elif isinstance(i1, Ion) and isinstance(i2, IonGroup):
         m = Molecule(cation, anion)
-        return _join_identical_ion(m),
+        return _join_identical_ions(m),
 
     elif isinstance(i1, IonGroup) and isinstance(i2, Ion):
         return ionic_addition(i2, i1)
