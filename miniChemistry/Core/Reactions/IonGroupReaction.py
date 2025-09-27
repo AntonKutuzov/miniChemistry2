@@ -24,4 +24,10 @@ class IonGroupReaction(MolecularReaction):
 
     @staticmethod
     def from_string(reaction: str) -> IonGroupReaction:
-        pass
+        if '->' in reaction or '=' in reaction:
+            reagents, products = MolecularReaction.extract_substances(reaction)
+            return IonGroupReaction(reagents=reagents, products=products)
+        else:
+            reagents = MolecularReaction.parse_side(reaction)
+            return IonGroupReaction(*reagents)
+

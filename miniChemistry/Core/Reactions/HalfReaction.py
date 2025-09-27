@@ -6,7 +6,7 @@ from miniChemistry.Core.Reactions.AbstractReaction import AbstractReaction
 from miniChemistry.Core.Substances import Ion, IonGroup
 from miniChemistry.Core.ElementaryParticle import *
 from miniChemistry.Core.Tools.Equalizer import Equalizer
-from miniChemistry.Core.Tools.parser import parse, parse_ion
+from miniChemistry.Core.Tools.parser import parse, split_ion_string
 
 from typing import List, Dict, Tuple
 
@@ -60,7 +60,7 @@ class HalfReaction(AbstractReaction):
             return parse(p)
 
         elif p_type == 'Ion':
-            f, ch = parse_ion(p)
+            f, ch = split_ion_string(p)
             return Ion.from_string(f, ch)
         else:
             raise Exception(f'What type is it?: {p}.')

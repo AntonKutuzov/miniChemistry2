@@ -3,17 +3,44 @@ from chemparse import parse_formula
 import miniChemistry.Core.Database.ptable as pt
 from miniChemistry.Core.CoreExceptions.ToolExceptions import InvalidFormula
 from miniChemistry.Core.Database.stable import SolubilityTable
-from miniChemistry.Core.CoreExceptions.stableExceptions import OutOfOptions
-from miniChemistry.Core.Substances import Simple, Molecule
+from miniChemistry.Core.CoreExceptions.stableExceptions import OutOfOptions, IonNotFound
+from miniChemistry.Core.Substances import Simple, Molecule, Ion, IonGroup
+from miniChemistry.Core.Substances.convert import add_group, ion
 
 from miniChemistry.MiniChemistryException import NoArgumentForFunction
 
 
+def from_charge(ion: Ion, charge: int) -> IonGroup | Ion | Molecule:
+    def sign(number: int) -> str:
+        if number > 0:
+            return '+'
+        elif number < 0:
+            return '-'
+        else:
+            return '+-'  # in case number == 0
 
-def parse_ion(ion_formula: str) -> Tuple[str, int]:
+    # charge check
+    conditions = (
+        abs(charge) <= abs(ion.charge),
+        sign(ion.charge) in sign(charge)  # to account for zero charge as well
+    )
+
+    if all(conditions):
+        if abs(charge) == abs(ion.charge):
+            return ion
+
+        ig = add_group(ion)
+        while abs(ig.charge) > abs(charge):
+            ig = add_group(ig)
+        return ig
+    else:
+        raise Exception("Charge's absolute value must be smaller than the absolute value of the charge of the ion.")
+
+
+def split_ion_string(ion_formula: str) -> Tuple[str, int]:
     """
     A form of writing ions accepted in this module is <ion formula>(<ion charge>). For example, an ion consisting of
-    sodium ation with charge equal to +1 will be written as "Na(1)". An oxygen atom with charge equal to -2 will be
+    sodium cation with charge equal to +1 will be written as "Na(1)". An oxygen atom with charge equal to -2 will be
     written as "O(-2)".
 
     Sometimes it is needed to parse the ion's formula into its composition and charge separately. Hence, the formula
@@ -24,7 +51,7 @@ def parse_ion(ion_formula: str) -> Tuple[str, int]:
     """
 
     try:
-        formula, charge = ion_formula.split('(')
+        formula, charge = ion_formula.rsplit('(', 1)
         charge = charge.strip(')')
         charge = int(charge)
     except ValueError:
@@ -98,7 +125,11 @@ def split_to_elements(formula: str) -> List[str]:
 
 
 
-def index_ratios(formula: str = '', round_to: int = 2, composition: Dict[str, Union[int, float]] = None) -> Dict[str, float]:
+def index_ratios(
+        formula: str = '',
+        round_to: int = 2,
+        composition: Dict[str, Union[int, float]] = None
+) -> Dict[str, float]:
     """
     The function returns the relative number of elements in a given substance (formula). It takes the largest index
     found in a formula and divides by it all other indices. In this way it returns a dict of element symbols with
@@ -161,8 +192,6 @@ def _remove_first_element(formula: str, return_string: bool = False, return_comp
     return return_dict
 
 
-
-
 def get_anion(formula: str) -> SolubilityTable.Ion:
     """
     Extracts an anion from a substance's formula. Returns anion's formula and charge separately if the corresponding
@@ -195,7 +224,6 @@ def get_anion(formula: str) -> SolubilityTable.Ion:
             return SolubilityTable.Ion(composition=compound.anion, charge=compound.anion_charge)
     else:
         raise OutOfOptions(formula=formula, function_name='get_anion', variables=locals())
-
 
 
 def get_cations(formula: str) -> List[SolubilityTable.Ion]:
@@ -277,21 +305,63 @@ def parse_complex_molecule(formula: str) -> Molecule:
         if m.formula() == formula:
             return m
     else:
-        raise InvalidFormula(formula, variables=locals())
+        ivf = InvalidFormula(formula, variables=locals())
+        ivf.description += ('\nAnother reason could be that you entered a formula of an ion, but forgot to indicate the\n'
+                            'sign. In this case the code cannot find a molecule fitting your formula.')
+        raise ivf
 
 
+def parse_ion(string: str) -> Ion | IonGroup:
+    ion_string, charge = split_ion_string(string)
+    composition = parse_formula(ion_string)
 
-def parse(formula: str) -> Union[Simple, Molecule]:
-    string_composition = parse_formula(formula)
+    if len(composition) > 1:
+        try:
+            cations = get_cations(ion_string)
+            cations = [ion(i) for i in cations]
 
-    if len(string_composition) > 1:
-        return parse_complex_molecule(formula)
+            anion = get_anion(ion_string)
+            anion = ion(anion)
+
+            if Ion.proton in cations:
+                main_ion = anion
+                ig = from_charge(main_ion, charge)
+            elif Ion.hydroxide == anion:
+                main_ion = max(cations, key=lambda i: i.charge)
+                ig = from_charge(main_ion, charge)
+            else:
+                try:
+                    ig = Ion.from_string(ion_string, charge)
+                except IonNotFound as e:
+                    e.description += 'ERROR NOTE: Remember that IonGroup class only supports acids and bases, and not partially dissociated salts.'
+                    raise e
+        except OutOfOptions:
+            try:
+                ig = Ion.from_string(ion_string, charge)
+            except IonNotFound as e:
+                e.description += 'ERROR NOTE: Remember that IonGroup class only supports acids and bases, and not partially dissociated salts.'
+                raise e
+
+    elif len(composition) == 1:
+        return Ion.from_string(ion_string, charge)
     else:
-        return parse_simple_molecule(formula)
+        raise Exception('Substance with zero elements found. How?')
+
+    if ig.formula() == string:
+        return ig
+    else:
+        raise InvalidFormula(formula=string, variables=locals())
 
 
-"""
-formula = "S8"
-molecule = parse_complex_molecule(formula)
-print(molecule.formula())
-"""
+def parse(formula: str) -> Simple | Molecule | Ion | IonGroup:
+    # if the convention of denoting substance is followed, ions always end up with ')', but molecules never do.
+
+    if formula[-1] == ')':
+        return parse_ion(formula)
+    else:
+        string_composition = parse_formula(formula)
+
+        if len(string_composition) > 1:
+            return parse_complex_molecule(formula)
+        else:
+            return parse_simple_molecule(formula)

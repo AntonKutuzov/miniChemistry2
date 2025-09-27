@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from miniChemistry.Core.Substances.Particle import Particle
-from miniChemistry.Core.Substances.Ion import Ion
-from miniChemistry.Core.Substances.Molecule import Molecule
+from miniChemistry.Core.Substances import Ion, Molecule
 import miniChemistry.Core.Database.ptable as pt
 from miniChemistry.MiniChemistryException import NotSupposedToHappen
 from miniChemistry.Utilities.Checks import charge_check

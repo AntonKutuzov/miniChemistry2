@@ -1,24 +1,20 @@
-from miniChemistry.Core.Substances import Molecule, Simple, Ion, IonGroup
-from miniChemistry.Core.Substances.Particle import Particle
-from miniChemistry.Core.Reactions import MolecularReaction, IonGroupReaction
-from miniChemistry.Computations.SSDatum import SSDatum
-from miniChemistry.Utilities.File import File
-from miniChemistry.Core.Tools.parser import parse
+from QCalculator.Exceptions.DatumExceptions import IncompatibleUnits
 
-from miniChemistry.Computations.ComputationExceptions.ReactionCalculatorException import *
-from miniChemistry.Core.CoreExceptions.ReactionExceptions import WrongReactionConstructorParameters
-from miniChemistry.Computations.ComputationExceptions.QuantityCalculatorException import ValueNotFoundException
 from miniChemistry.Computations.ComputationExceptions.IterativeCalculatorException import (
     SolutionNotFound,
     IncorrectFileFormatting)
-
+from miniChemistry.Computations.ComputationExceptions.QuantityCalculatorException import ValueNotFoundException
 from QCalculator import Datum, LinearIterator, Assumption
-
-from QCalculator.Exceptions.DatumExceptions import IncompatibleUnits
 from QCalculator.Exceptions.LinearIteratorExceptions import SolutionNotFound, CannotRewriteVariable
-
+from miniChemistry.Computations.SSDatum import SSDatum
+from miniChemistry.Core.CoreExceptions.ReactionExceptions import WrongReactionConstructorParameters
+from miniChemistry.Computations.ComputationExceptions.ReactionCalculatorException import *
+from miniChemistry.Core.Reactions.MolecularReaction import MolecularReaction
 from typing import List, Tuple, Dict, Any, Generator
-
+from miniChemistry.Core.Substances import Molecule, Simple, Ion
+from miniChemistry.Core.Substances.Particle import Particle
+from miniChemistry.Core.Tools.parser import parse, split_ion_string
+from miniChemistry.Utilities.File import File
 
 
 class ReactionCalculator:
@@ -74,18 +70,16 @@ class ReactionCalculator:
     """
 
     EXCESS_COEFFICIENT = 100
-    ALLOWED_SUBSTANCES = Molecule | Simple | Ion | IonGroupReaction
-    ALLOWED_REACTIONS = MolecularReaction | IonGroupReaction
 
     # ===================================================================================================== CONSTRUCTORS
     def __init__(self, *args, **kwargs):
         self._reaction = None
 
-        if len(args) == 1 and isinstance(args[0], (MolecularReaction, IonGroupReaction)):
+        if len(args) == 1 and isinstance(args[0], MolecularReaction):
             self._init_from_reaction(args[0])
         elif len(args) == 1 and isinstance(args[0], str):
             self._init_from_string(args[0])
-        elif len(args) > 1 and all([isinstance(arg, Particle) for arg in args]):
+        elif len(args) > 1 and all([isinstance(arg, (Molecule, Simple)) for arg in args]):
             self._init_from_reagents(args)
         elif len(kwargs) == 2 and 'reagents' in kwargs and 'products' in kwargs:
             self._init_from_substances(rs=kwargs['reagents'], ps=kwargs['products'])
@@ -95,56 +89,35 @@ class ReactionCalculator:
         self._substance_data = self._create_calculators()
         self._write_molar_masses()
 
-    def _init_from_reaction(self, r: ALLOWED_REACTIONS) -> None:
+    def _init_from_reaction(self, r: MolecularReaction) -> None:
         self._reaction = r
 
-    def _init_from_reagents(self, rs: Tuple[ALLOWED_SUBSTANCES, ...]) -> None:
+    def _init_from_reagents(self, rs: Tuple[Molecule|Simple, ...]) -> None:
         try:
-            if all([isinstance(arg, (Molecule, Simple)) for arg in rs]):
-                self._reaction = MolecularReaction(reagents=list(rs))
-            else:
-                self._reaction = IonGroupReaction(reagents=list(rs))
+            self._reaction = MolecularReaction(reagents=list(rs))
         except WrongReactionConstructorParameters:
             raise InitializationError(init_type='reagents', variables=locals())
 
-    def _init_from_substances(self, rs: List[ALLOWED_SUBSTANCES], ps: List[ALLOWED_SUBSTANCES]) -> None:
+    def _init_from_substances(self, rs: List[Molecule|Simple], ps: List[Molecule|Simple]) -> None:
         try:
-            if all([isinstance(arg, (Molecule, Simple)) for arg in rs + ps]):
-                self._reaction = MolecularReaction(reagents=list(rs), products=list(ps))
-            else:
-                self._reaction = IonGroupReaction(reagents=list(rs), products=list(ps))
+            self._reaction = MolecularReaction(reagents=list(rs), products=list(ps))
         except WrongReactionConstructorParameters:
             raise InitializationError(init_type='reagents and products', variables=locals())
 
     def _init_from_string(self, string: str) -> None:
         try:
-            if '->' in reaction or '=' in reaction:
-                reagents, products = MolecularReaction.extract_substances(reaction)
-            else:
-                reagents = MolecularReaction.parse_side(reaction)
-                products = None
-
-            if all([isinstance(r, (Molecule, Simple)) for r in reagents]):
-                if products is None:
-                    self._reaction = MolecularReaction(*reagents)
-                else:
-                    self._reaction = MolecularReaction(reagents=reagents, products=products)
-            else:
-                if products is None:
-                    self._reaction = IonGroupReaction(*reagents)
-                else:
-                    self._reaction = IonGroupReaction(reagents=reagents, products=products)
-
+            self._reaction = MolecularReaction.from_string(string)
         except WrongReactionConstructorParameters:
             raise InitializationError(init_type='reaction scheme as a string', variables=locals())
 
     # ================================================================================================== PRIVATE METHODS
-    def _create_calculators(self) -> Dict[ALLOWED_SUBSTANCES, LinearIterator]:
+    def _create_calculators(self) -> Dict[Molecule|Simple, LinearIterator]:
         data = dict()
 
         for sub in self.substances:
             ic = LinearIterator()
             data.update({sub : ic})
+            # self.__setattr__(sub.formula(), ic)
 
         return data
 
@@ -154,13 +127,13 @@ class ReactionCalculator:
             self.substance(sub).write(Datum('M', M, 'g/mole'))
 
     @staticmethod
-    def _substance_to_particle(substance: str|ALLOWED_SUBSTANCES) -> ALLOWED_SUBSTANCES:
+    def _substance_to_particle(substance: str|Molecule|Simple) -> Molecule|Simple:
         if isinstance(substance, Particle):
             return substance
         elif isinstance(substance, str):
             sub = parse(substance)
 
-            if isinstance(sub, (Molecule, Simple, Ion, IonGroup)):
+            if isinstance(sub, (Molecule, Simple, Ion)):
                 return sub
         else:
             pass
@@ -210,10 +183,10 @@ class ReactionCalculator:
 
     @staticmethod
     def exception_handler(func,
-                          iter: List[ALLOWED_SUBSTANCES],
+                          iter: List[Molecule|Simple],
                           exception, # Any MiniChemistryException
                           exception_if: str = 'any',
-                          except_substances: List[ALLOWED_SUBSTANCES] = None,
+                          except_substances: List[Simple|Molecule] = None,
                           instant_return: bool = False
                           ) -> Any:
 
@@ -247,7 +220,7 @@ class ReactionCalculator:
 
     # =================================================================================================== PUBLIC METHODS
     #                                                                                                variable management
-    def substance(self, substance: str|ALLOWED_SUBSTANCES) -> LinearIterator:
+    def substance(self, substance: str|Molecule|Simple) -> LinearIterator:
         sub = self._substance_to_particle(substance)
         try:
             return self._substance_data[sub]
@@ -278,11 +251,11 @@ class ReactionCalculator:
                     print(f'Tried to rewrite to {d.value} {d.unit}')
                     exit(1)
 
-    def erase(self, substance: str|ALLOWED_SUBSTANCES, variable: str) -> None:
+    def erase(self, substance: str|Molecule|Simple, variable: str) -> None:
         sub = self._substance_to_particle(substance)
         self.substance(sub).erase(variable)
 
-    def assume_excess(self, *substances: str|ALLOWED_SUBSTANCES) -> None:
+    def assume_excess(self, *substances: str|Molecule|Simple) -> None:
         moles = self.moles(exception_if='all')
         mm = max(moles, key=lambda ssd: ssd.magnitude)
         excess = ReactionCalculator.EXCESS_COEFFICIENT * mm.value
@@ -292,15 +265,15 @@ class ReactionCalculator:
             self.write(SSDatum(sub, 'n', excess, 'moles'))
 
     def moles(self,
-              *substances: str|ALLOWED_SUBSTANCES,
+              *substances: str|Molecule|Simple,
               round_to: int = 15,
               exception_if: str = 'any',
-              except_substances: List[ALLOWED_SUBSTANCES|str] = None
+              except_substances: List[Molecule|Simple|str] = None
               ) -> List[SSDatum]:
 
         iterable = [self._substance_to_particle(s) for s in substances] if substances else self.substances
 
-        def func(it: ReactionCalculator.ALLOWED_SUBSTANCES):
+        def func(it: Molecule|Simple):
             sub = self._substance_to_particle(it)
             mole = self.substance(sub).read('n', 'mole', rounding=False)
             return SSDatum(sub, mole.symbol, round(mole.value, round_to), mole.unit)
@@ -315,13 +288,13 @@ class ReactionCalculator:
 
     #                                                                                                    number of moles
     def compute_moles_of(self,
-                         *substances: str|ALLOWED_SUBSTANCES,
+                         *substances: str|Molecule|Simple,
                          round_to: int = 15,
                          exception_if: str = 'any',
-                         except_substances: List[ALLOWED_SUBSTANCES|str] = None
+                         except_substances: List[Molecule|Simple|str] = None
                          ) -> List[SSDatum]:
 
-        def func(it: ReactionCalculator.ALLOWED_SUBSTANCES):
+        def func(it: Molecule|Simple):
             # one SSD – one element in the output list
             return self.compute(SSDatum(it, 'n', round(1/9, round_to), 'mole'))[0]
 
@@ -334,8 +307,8 @@ class ReactionCalculator:
         )
 
     def derive_moles_of(self,
-                        *find: ALLOWED_SUBSTANCES|str,
-                        use: ALLOWED_SUBSTANCES|str,
+                        *find: Molecule|Simple|str,
+                        use: Molecule | Simple | str,
                         round_to: int = 15,
                         ignore_rewriting: bool = False
                         ) -> List[SSDatum]:
@@ -365,7 +338,7 @@ class ReactionCalculator:
         return moles
 
     def limiting_reagent(self,
-                         *substances: ALLOWED_SUBSTANCES|str,
+                         *substances: Molecule|Simple|str,
                          round_to: int = 15
                          ) -> SSDatum:
         if not substances:
@@ -376,7 +349,7 @@ class ReactionCalculator:
         return lr
 
     def excess(self,
-               *substances: ALLOWED_SUBSTANCES|str,
+               *substances: Molecule|Simple|str,
                round_to: int = 15
                ) -> List[SSDatum]:
         exs = list()
@@ -397,10 +370,7 @@ class ReactionCalculator:
         return exs
 
     #                                                                                                       coefficients
-    def ratio(self,
-              *substances: str|ALLOWED_SUBSTANCES,
-              wrt: str|ALLOWED_SUBSTANCES
-              ) -> Dict[ALLOWED_SUBSTANCES, float]:
+    def ratio(self, *substances: str|Molecule|Simple, wrt: str|Molecule|Simple) -> Dict[Molecule|Simple, float]:
         wrt_sub = self._substance_to_particle(wrt)
         wrt_coef = self.coefficients[wrt_sub]
         coef_ratios = dict()
@@ -416,7 +386,7 @@ class ReactionCalculator:
         return coef_ratios
 
     def normalized_moles(self,
-                         *substances: str|ALLOWED_SUBSTANCES,
+                         *substances: str|Molecule|Simple,
                          round_to: int = 15
                          ) -> List[SSDatum]:
 
@@ -432,7 +402,7 @@ class ReactionCalculator:
 
         return normalized_list
 
-    def coefs(self, *substances: ALLOWED_SUBSTANCES|str) -> List[float]:
+    def coefs(self, *substances: Molecule|Simple|str) -> List[float]:
         cs = list()
 
         for substance in substances:
@@ -473,11 +443,11 @@ class ReactionCalculator:
 
     # ======================================================================================================= PROPERTIES
     @property
-    def reaction(self) -> ALLOWED_REACTIONS:
+    def reaction(self) -> MolecularReaction:
         return self._reaction
 
     @property
-    def substances(self) -> List[ALLOWED_SUBSTANCES]:
+    def substances(self) -> List[Molecule|Simple]:
         return self.reaction.substances
 
     @property
@@ -485,11 +455,26 @@ class ReactionCalculator:
         return list(self._substance_data.values())
 
     @property
-    def coefficients(self) -> Dict[ALLOWED_SUBSTANCES, float|int]:
+    def coefficients(self) -> Dict[Molecule|Simple, float|int]:
         return self.reaction.coefficients
 
+"""
+NaOH = Molecule.from_string('Na', 1, 'OH', -1)
+H2SO4 = Molecule.from_string('H', 1, 'SO4', -2)
+H2O = Molecule.water
+Na2SO4 = Molecule.from_string('Na', 1, 'SO4', -2)
 
-if __name__ == '__main__':
-    reaction = 'CaOH(1) + HCl = CaCl2 + H2O + H(1)'
-    rc = ReactionCalculator(reaction)
-    print(rc.reaction.equation)
+rc = ReactionCalculator('NaOH + H2SO4')
+print(rc.reaction.equation)
+
+rc.write(SSDatum(H2SO4, 'mps', 9.8, 'g'))
+rc.write(SSDatum(H2O, 'mps', 185, 'g'))
+
+print(*rc.compute_moles_of(H2SO4, H2O, round_to=2))
+rc.assume_excess(NaOH)
+lr = rc.limiting_reagent(H2SO4, H2O)
+print(lr)
+print(*rc.moles(H2SO4, H2O))
+print(*rc.derive_moles_of(Na2SO4, use=lr.substance, round_to=2))
+print(*rc.excess(*rc.reaction.reagents, round_to=2))
+"""

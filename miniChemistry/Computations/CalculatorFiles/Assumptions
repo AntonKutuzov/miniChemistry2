@@ -6,7 +6,7 @@
 # next the variables and their values for the assumption come. The keyword "variable" indicates that this string will
 # be split and written as a Datum into the LinearIterator class' instance. The "compute" keyword mean that the
 # variable will be calculated right after the assumption is applied (useful for constants that depend on other constants,
-# like V0 (molar volume of gases).
+# like V0 (molar volume of gases)).
 # "assume" means that while computing all the "compute" variables, the following variables will be set, but then deleted.
 #
 # Large numbers are indicated using the E-notation, for example 6.02*10**23 should be written as 6.02E23, because only
@@ -26,7 +26,7 @@ compute V0::m**3/mol
 !NTP: normal temperature and pressure
 variable P:101325:Pa
 variable T:273.15:K
-assume: n:1:mol
+assume n:1:mol
 compute V0::m**3/mol
 !
 

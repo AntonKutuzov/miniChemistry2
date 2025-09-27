@@ -121,6 +121,7 @@ class Molecule(Particle):
         elif index == 1:
             return i.formula(remove_charge=True)
         else:
+            formula = i.formula()
             nsth = NotSupposedToHappen(variables=locals())
             nsth.description += (f'\n\nIndex of one of the ions used to create a molecule is less than 1, which \n'
                              f'normally is not possible.')

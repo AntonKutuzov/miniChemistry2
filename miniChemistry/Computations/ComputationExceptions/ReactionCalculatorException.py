@@ -37,5 +37,13 @@ class ComputationException(ReactionCalculatorException):
                             f'or the target variable. Check that the substance is correct.')
         super().__init__(variables)
 
-    
 
+class SubstanceNotFound(ReactionCalculatorException):
+    def __init__(self, formula: str, variables: dict):
+        self._message = f' The substance with formula "{formula}" is not found in the ReactionCalculator.'
+        self.description = (
+            f'The substance with formula "{formula}" is not present in the Reaction instance of the ReactionCalculator.\n'
+            'Most probably this error is caused by wrong formula given to the substance instance from string getter.\n'
+            'Check that you give in correct formula, also check that the SSDatum instances are written correctly.'
+        )
+        super().__init__(variables)

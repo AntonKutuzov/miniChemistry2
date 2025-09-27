@@ -34,7 +34,7 @@ For similar information on bases, look at BasesTable.py.
 
 from typing import Tuple, List
 from chemparse import parse_formula
-from miniChemistry.Core.Tools.parser import parse_ion
+from miniChemistry.Core.Tools.parser import split_ion_string
 from miniChemistry.Utilities.File import File
 from miniChemistry.Core.Substances import Molecule, Ion
 from miniChemistry.Core.Substances._helpers import _string_to_elementary_composition
@@ -146,7 +146,7 @@ class AcidsTable:
         for element in self._elements:
             if element is not None:
                 try:
-                    i = Ion.from_string(*parse_ion(element))
+                    i = Ion.from_string(*split_ion_string(element))
                 except InvalidFormula as ife:
                     ife.description += ('\n\nIMPORTANT:\nThis exception occurred while parsing the data from AcidCompatibilityTable.txt\n'
                                               'file. Please check that the data you wrote in are correct.')
@@ -192,7 +192,7 @@ class AcidsTable:
 
         for rest in self._acid_rests_str:
             try:
-                ion, charge = parse_ion(rest)
+                ion, charge = split_ion_string(rest)
             except InvalidFormula as ife:
                 ife.description += (
                     '\n\nIMPORTANT:\nThis exception occurred while parsing the data from AcidCompatibilityTable.txt\n'

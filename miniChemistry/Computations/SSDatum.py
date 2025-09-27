@@ -1,5 +1,6 @@
 from __future__ import annotations
 from miniChemistry.Core.Substances import Molecule, Simple
+from miniChemistry.Core.Tools.parser import parse
 from QCalculator import Datum
 
 from typing import Union
@@ -14,12 +15,16 @@ class SSDatum(Datum):
 
     
     def __init__(self,
-                 substance: Union[Molecule, Simple],
+                 substance: Molecule|Simple|str,
                  variable: str,
                  value: float,
                  units: Union[str, Unit] = 'dimensionless') -> None:
 
-        self._substance = substance
+        if isinstance(substance, (Molecule, Simple)):
+            self._substance = substance
+        else:
+            self._substance = parse(substance)
+
         super().__init__(variable, value, units)
 
     def __eq__(self, other: SSDatum):

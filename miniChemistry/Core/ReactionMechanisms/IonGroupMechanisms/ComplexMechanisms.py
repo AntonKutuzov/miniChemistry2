@@ -101,11 +101,14 @@ def i_ig_decision(
         ig: IonGroup
         ):
 
-    water_like = {Ion.hydroxide, Ion.proton}
-    ion = ig.cation if ig.cation in water_like else ig.anion
+    if isinstance(i, Ion) and isinstance(ig, IonGroup):
+        water_like = {Ion.hydroxide, Ion.proton}
+        ion = ig.cation if ig.cation in water_like else ig.anion
 
-    if i in water_like and not i == ion:
-        return ion_picking(ig, i)
+        if i in water_like and not i == ion:
+            return ion_picking(ig, i)
 
+        else:
+            return ionic_addition(i, ig)
     else:
-        return ionic_addition(i, ig)
+        return i_ig_decision(ig, i)

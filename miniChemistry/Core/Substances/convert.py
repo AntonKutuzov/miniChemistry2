@@ -128,7 +128,7 @@ def ion(substance: Simple | pt.Element | SolubilityTable.Ion,
 
     else:
         nsth = NotSupposedToHappen(variables=locals())
-        nsth.description = (f'This time you called a function "ion()" from Core.Substances(old).py and for some reason\n'
+        nsth.description = (f'This time you called a function "ion()" from Core.Substance.convert.py and for some reason\n'
                             f'it took in the parameter "substance" while it has type {type(substance)}, whereas\n'
                             f'usually it should accept only the following data types: Particle, Simple, pt.Element,\n'
                             f'and SolubilityTable.Ion.')

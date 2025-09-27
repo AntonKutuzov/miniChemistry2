@@ -29,7 +29,7 @@ from miniChemistry.Core.Substances import Ion
 from chemparse import parse_formula
 import pandas as pd
 import pathlib
-from miniChemistry.Core.Tools.parser import parse_ion
+from miniChemistry.Core.Tools.parser import split_ion_string
 
 
 def modify(confirmation: bool = True):
@@ -223,8 +223,8 @@ def modify(confirmation: bool = True):
         # slicing is used to avoid using anions twice. Remove it and see the result
         for cation, solubility in row[1:].items():
             # print(*row.items())  # to understand the above written code
-            cation_formula, cation_charge = parse_ion(cation)
-            anion_formula, anion_charge = parse_ion(anion)
+            cation_formula, cation_charge = split_ion_string(cation)
+            anion_formula, anion_charge = split_ion_string(anion)
 
             if not anion_formula == 'NO3':  # skipping nitrates, because they are already written into the table
                 # print(cation_formula, cation_charge, anion_formula, anion_charge, solubility)
