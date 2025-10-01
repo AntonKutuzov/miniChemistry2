@@ -69,7 +69,11 @@ def weak_electrolyte_restriction(*products: Simple|Molecule, raise_exception: bo
             return False
 
 
-def metal_activity_restriction(sub: Union[Simple, Molecule], metal: Union[Simple, Molecule], raise_exception: bool = False) -> bool:
+def metal_activity_restriction(
+        sub: Simple | Molecule,
+        metal: Simple | Molecule,
+        raise_exception: bool = False
+) -> bool:
     """
     Checks that the activity of a Simple metal is larger than the activity of a metal from Molecule instance.
     NOTE: sub and metal parameters can be safely swapped.

@@ -129,20 +129,17 @@ class ProblemSolver(ProblemParser):
             self._li.clear()
             return answers
 
-
+'''
 if __name__ == '__main__':
     data_string = """
-    r: Ba(NO3)2 + Na2SO4
-    
-    C[ Ba(NO3)2 ] = 0.5 M
-    C[ Na2SO4 ] = 0.1 M
-    Vsm[] = 222 mL
-    
-    t: mps[ BaSO4 ] = 0.01 g
-    t: n[] = 0.001 mole
+Vpg[H2] = 10 L
+V0[] = 24.4 L/mole
+t: V[] = 0.001 L
+r: H2 + O2
     """
 
     ps = ProblemSolver(data_string)
     res = ps.solve()
 
     print(*res, sep='\n')
+'''

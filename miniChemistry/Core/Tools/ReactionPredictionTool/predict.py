@@ -12,7 +12,6 @@ from miniChemistry.Core.Tools.ReactionPredictionTool.IonPredict import restricti
 from miniChemistry.Core.Tools.ReactionPredictionTool.IonPredict import effective_class as ionic_effective_class
 from miniChemistry.Core.Tools.ReactionPredictionTool.IonPredict import file as ionic_file
 
-
 from typing import List, Dict, Any, Tuple, Literal, Callable
 import csv
 
