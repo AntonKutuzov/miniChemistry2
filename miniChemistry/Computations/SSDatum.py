@@ -1,5 +1,6 @@
 from __future__ import annotations
 from miniChemistry.Core.Substances import Molecule, Simple
+from miniChemistry.Core.Substances.Particle import Particle
 from miniChemistry.Core.Tools.parser import parse
 from QCalculator import Datum
 
@@ -20,7 +21,7 @@ class SSDatum(Datum):
                  value: float,
                  units: Union[str, Unit] = 'dimensionless') -> None:
 
-        if isinstance(substance, (Molecule, Simple)):
+        if isinstance(substance, Particle):
             self._substance = substance
         else:
             self._substance = parse(substance)

@@ -1,7 +1,7 @@
 import copy
 from typing import Tuple, Dict
-from miniChemistry.Core.Reactions import MolecularReaction
-from miniChemistry.Core.Substances import Molecule, Simple
+from miniChemistry.Core.Reactions import MolecularReaction, IonGroupReaction
+from miniChemistry.Core.Substances import Molecule, Simple, Ion, IonGroup
 
 
 """
@@ -54,13 +54,23 @@ class ProblemParser:
             string = string.replace(' ', '')
         return string
 
-    def _parse_reaction_data(self, r: str) -> MolecularReaction:
+    def _parse_reaction_data(self, r: str) -> MolecularReaction | IonGroupReaction:
         r = self.remove_spaces(r)
         rest, r = r.split(':')
 
         if r:
-            reaction = MolecularReaction.from_string(r)
-            return reaction
+            if '=' in r or '->' in r:
+                reagents, products = MolecularReaction.extract_substances(r)
+                substances = reagents + products
+            else:
+                substances = MolecularReaction.parse_side(r)
+
+            if any([isinstance(s, (Ion, IonGroup)) for s in substances]):
+                return IonGroupReaction.from_string(r)
+            else:
+                return MolecularReaction.from_string(r)
+
+
         else:
             raise Exception("You didn't specify the reaction, but indicated its presence by 'r:'.")
 
