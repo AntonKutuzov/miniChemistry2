@@ -273,10 +273,12 @@ class ReactionCalculator:
                 if ignore_rewriting:
                     return
                 else:
-                    print(f'Cannot rewrite the variable "{d.symbol}" for substance {sub.formula()}')
-                    print('The current value is', self.substance(sub).read(d.symbol, round_to=4))
-                    print(f'Tried to rewrite to {d.value} {d.unit}')
-                    exit(1)
+                    raise CannotRewriteVariable(
+                        comment=f'Cannot rewrite the variable for substance {sub.formula()}. The old units are {self.substance(sub).read(d.symbol, round_to=4).unit}, the new units are {d.unit}',
+                        var=d.symbol,
+                        old_value=self.substance(sub).read(d.symbol, round_to=4).value,
+                        new_value=d.value
+                    )
 
     def erase(self, substance: str|ALLOWED_SUBSTANCES, variable: str) -> None:
         sub = self._substance_to_particle(substance)

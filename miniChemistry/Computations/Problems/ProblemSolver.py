@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from miniChemistry.Computations.Problems.ProblemParser import ProblemParser
 from miniChemistry.Computations.ReactionCalculator import ReactionCalculator
 from miniChemistry.Computations.SSDatum import SSDatum
@@ -8,6 +10,7 @@ from QCalculator.database import add_formula, add_variable
 from QCalculator.Exceptions.LinearIteratorExceptions import SolutionNotFound
 
 from typing import List, Optional
+from copy import deepcopy
 
 
 class ProblemSolver(ProblemParser):
@@ -54,7 +57,9 @@ class ProblemSolver(ProblemParser):
         if self.reaction is None:
             return self.solve_QC()
         else:
-            reagent_moles = self._rc.compute_moles_of(*self.reaction.reagents, exception_if='all')
+            substances = deepcopy(self.reaction.reagents)
+            substances.extend(self.reaction.products)
+            reagent_moles = self._rc.compute_moles_of(*substances, exception_if='all')
 
             if len(reagent_moles) > 1:
                 return self.solve_LR()
@@ -72,9 +77,11 @@ class ProblemSolver(ProblemParser):
         return result
 
     def solve_S(self) -> List[SSDatum]:
-        reagent_moles = self._rc.compute_moles_of(*self.reaction.reagents, exception_if='all')
-        moles = reagent_moles[0]
-        self._rc.derive_moles_of(*self.reaction.products, use=moles.substance)
+        substances = deepcopy(self.reaction.reagents)
+        substances.extend(self.reaction.products)
+        available_moles = self._rc.compute_moles_of(*substances, exception_if='all')
+        moles = available_moles[0]
+        self._rc.derive_moles_of(*self.reaction.products, use=moles.substance, ignore_rewriting=True)
         self._rc.derive_moles_of(*self.reaction.reagents, use=moles.substance, ignore_rewriting=True)
         result = self._rc.compute(*self.target_list, rounding=self._rounding)
         return result
