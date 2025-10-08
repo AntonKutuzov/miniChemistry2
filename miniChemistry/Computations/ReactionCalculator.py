@@ -368,7 +368,8 @@ class ReactionCalculator:
 
     def all_moles(self) -> List[SSDatum]:
         given_moles = self.compute_moles_of(*self.substances, exception_if='all')
-        possible_moles = self.derive_moles_of(*self.substances, use=given_moles[0].substance, ignore_rewriting=True)
+        lr = self.limiting_reagent(*self.substances)
+        possible_moles = self.derive_moles_of(*self.substances, use=lr.substance, ignore_rewriting=True)
         return possible_moles
 
     def limiting_reagent(self,
