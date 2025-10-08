@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "minichemistry"
-version = "2.0.6"
+version = "2.1.6"  # major refactoring . new features . big fixing
 requires-python = ">= 3.2"
 authors = [
     { name = "Antons Kutuzovs", email = "akutuzovsssss@gmail.com" }
@@ -13,7 +13,7 @@ authors = [
 description = "A package to model simple stoichiometric calculations over chemical reactions"
 readme = "README.md"
 license = "GPL-3.0-or-later"
-keywords = ["chemistry", "stoichiometry"]
+keywords = ["chemistry", "stoichiometry", "calculations"]
 
 dependencies = [
     "chemparse",

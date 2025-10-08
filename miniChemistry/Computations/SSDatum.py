@@ -1,5 +1,6 @@
 from __future__ import annotations
-from miniChemistry.Core.Substances import Molecule, Simple
+
+from miniChemistry.Core.Substances import Molecule, Simple, Ion, IonGroup
 from miniChemistry.Core.Substances.Particle import Particle
 from miniChemistry.Core.Tools.parser import parse
 from QCalculator import Datum
@@ -16,7 +17,7 @@ class SSDatum(Datum):
 
     
     def __init__(self,
-                 substance: Molecule|Simple|str,
+                 substance: Molecule |Simple | Ion | IonGroup | str,
                  variable: str,
                  value: float,
                  units: Union[str, Unit] = 'dimensionless') -> None:
@@ -48,10 +49,12 @@ class SSDatum(Datum):
         return Datum(self.symbol, self.value, self.unit)
 
     @property
-    def substance(self) -> Union[Molecule, Simple]:
+    def substance(self) -> Molecule | Simple | Ion | IonGroup:
         return self._substance
 
-"""
-ssd = SSDatum(Molecule.water, 'mps', 18, 'g')
-print(ssd.datum)
-"""
+
+if __name__ == '__main__':
+    sub = Ion.from_string('Ag', 1)
+    # sub = Molecule.water
+    ssd = SSDatum(sub, 'mps', 18, 'g')
+    print(ssd)

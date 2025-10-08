@@ -366,6 +366,11 @@ class ReactionCalculator:
 
         return moles
 
+    def all_moles(self) -> List[SSDatum]:
+        given_moles = self.compute_moles_of(*self.substances, exception_if='all')
+        possible_moles = self.derive_moles_of(*self.substances, use=given_moles[0].substance, ignore_rewriting=True)
+        return possible_moles
+
     def limiting_reagent(self,
                          *substances: ALLOWED_SUBSTANCES|str,
                          round_to: int = 15
@@ -382,6 +387,7 @@ class ReactionCalculator:
                round_to: int = 15
                ) -> List[SSDatum]:
         exs = list()
+
         lr = self.limiting_reagent(*substances)
         nn = self.normalized_moles(*substances)
         cs = self.coefs(*substances)
