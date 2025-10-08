@@ -101,9 +101,9 @@ class ReactionCalculator:
     def _init_from_reagents(self, rs: Tuple[ALLOWED_SUBSTANCES, ...]) -> None:
         try:
             if all([isinstance(arg, (Molecule, Simple)) for arg in rs]):
-                self._reaction = MolecularReaction(reagents=list(rs))
+                self._reaction = MolecularReaction(*rs)
             else:
-                self._reaction = IonGroupReaction(reagents=list(rs))
+                self._reaction = IonGroupReaction(*rs)
         except WrongReactionConstructorParameters:
             raise InitializationError(init_type='reagents', variables=locals())
 
