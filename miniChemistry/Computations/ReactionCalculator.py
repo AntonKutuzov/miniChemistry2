@@ -368,7 +368,7 @@ class ReactionCalculator:
 
     def all_moles(self) -> List[SSDatum]:
         given_moles = self.compute_moles_of(*self.substances, exception_if='all')
-        lr = self.limiting_reagent(*self.substances)
+        lr = self.limiting_reagent(*[ssd.substance for ssd in given_moles])
         possible_moles = self.derive_moles_of(*self.substances, use=lr.substance, ignore_rewriting=True)
         return possible_moles
 
