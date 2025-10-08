@@ -363,6 +363,7 @@ class ReactionCalculator:
             self.write(new_ssd, ignore_rewriting=ignore_rewriting)
             # new_ssd.rewrite(round(new_ssd.value, round_to), new_ssd.unit)
             new_ssd = self.substance(f).read('n', 'mole', rounding=False)
+            new_ssd = SSDatum(f, new_ssd.symbol, new_ssd.value, new_ssd.unit)
             moles.append(new_ssd)
 
         return moles
