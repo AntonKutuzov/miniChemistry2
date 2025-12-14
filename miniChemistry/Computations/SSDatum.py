@@ -46,10 +46,10 @@ class SSDatum(Datum):
 
     def to(self, unit: str, in_place: bool = False) -> SSDatum | None:
         if in_place:
-            self.to(unit, in_place=True)
+            super().to(unit, in_place=True)
             return None
         else:
-            new_self = self.to(unit, in_place=False)
+            new_self = super().to(unit, in_place=False)
             return SSDatum(self.substance, new_self.symbol, new_self.value, new_self.unit)
 
 
