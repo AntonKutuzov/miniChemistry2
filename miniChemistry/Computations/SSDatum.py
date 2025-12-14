@@ -44,6 +44,15 @@ class SSDatum(Datum):
         return_str = f'{self.symbol}({self.substance.formula()}) = {self.value} {self.unit}'
         return return_str
 
+    def to(self, unit: str, in_place: bool = False) -> SSDatum | None:
+        if in_place:
+            self.to(unit, in_place=True)
+            return None
+        else:
+            new_self = self.to(unit, in_place=False)
+            return SSDatum(self.substance, new_self.symbol, new_self.value, new_self.unit)
+
+
     @property
     def datum(self) -> Datum:
         return Datum(self.symbol, self.value, self.unit)
