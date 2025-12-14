@@ -5,7 +5,7 @@ from miniChemistry.Core.Substances.Particle import Particle
 from miniChemistry.Core.Tools.parser import parse
 from QCalculator import Datum
 
-from typing import Union
+from typing import Union, Optional
 from pint import Unit
 
 
@@ -52,6 +52,12 @@ class SSDatum(Datum):
             new_self = super().to(unit, in_place=False)
             return SSDatum(self.substance, new_self.symbol, new_self.value, new_self.unit)
 
+    def scale(self, factor: float|int, in_place: bool = False) -> Optional[SSDatum]:
+        if in_place:
+            self._value = self._value * factor
+            return None
+        else:
+            return SSDatum(self.substance, self.symbol, self.value * factor, self.unit)
 
     @property
     def datum(self) -> Datum:
