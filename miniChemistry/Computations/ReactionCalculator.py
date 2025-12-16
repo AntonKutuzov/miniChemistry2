@@ -74,7 +74,7 @@ class ReactionCalculator:
     """
 
     EXCESS_COEFFICIENT = 100
-    ALLOWED_SUBSTANCES = Molecule | Simple | Ion | IonGroupReaction
+    ALLOWED_SUBSTANCES = Molecule | Simple | Ion | IonGroup
     ALLOWED_REACTIONS = MolecularReaction | IonGroupReaction
 
     # ===================================================================================================== CONSTRUCTORS
@@ -281,7 +281,7 @@ class ReactionCalculator:
                     )
 
     def read(self,
-             sub: Molecule|Simple,
+             sub: ALLOWED_SUBSTANCES,
              var: str,
              units: str = 'default',
              rounding: bool = True,
