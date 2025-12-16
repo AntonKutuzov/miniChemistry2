@@ -280,6 +280,19 @@ class ReactionCalculator:
                         new_value=d.value
                     )
 
+    def read(self,
+             sub: Molecule|Simple,
+             var: str,
+             units: str = 'default',
+             rounding: bool = True,
+             round_to: int = 2
+             ) -> SSDatum:
+
+        d = self.substance(sub).read(var, units, rounding, round_to)
+        ssd = SSDatum(sub, d.symbol, d.value, d.unit)
+        return ssd
+
+
     def erase(self, substance: str|ALLOWED_SUBSTANCES, variable: str) -> None:
         sub = self._substance_to_particle(substance)
         self.substance(sub).erase(variable)

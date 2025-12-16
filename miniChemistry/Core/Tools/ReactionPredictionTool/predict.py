@@ -110,6 +110,8 @@ class RPT:
             )
 
         products = mechanism(*reagents)
+
+        # raises exception inside the function(s) call
         no_proceed = restriction(*products, raise_exception=not ignore_restrictions)
 
         return products
