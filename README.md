@@ -1,5 +1,5 @@
 # About miniChemistry Project
-*miniChemistry Project* is a Python package designed to simulate basics of chemistry, and to perform typical stoichiometric calculations over chemical reactions.
+*miniChemistry Project* is a Python package designed to simulate basics of chemistry, and to perform typical stoichiometric calculations over chemical reactions. It can also be used to generate exercises on a level of school chemistry. For quick grasp of what this package is capable of see a file at `EXAMPLES/Create_exercises.py` (More about it see in section "Examples" below).
 
 ## Features
 The package consists of four main parts.
@@ -40,6 +40,8 @@ from miniChemistry import EXAMPLES
 And follow the instructions.
 
 **NOTE: prior knowledge of chemistry is required to understand the exercises.**
+
+Also, you can take a look at the file located at `EXAMPLES/Create_exercises.py`. It shows how the package can be used to generate exercises of different complexity. Running the code will (by default) create 10 exercises on a school level chemistry (including answers). The code includes several setting variables that you can use to adjust types of exercises and desired output.
 
 # Contributions Welcome
 The project is mostly written by a single chemical engineering student. Hence, despite many checks and tests, the code can contain some mistakes and can sometimes result in errors. Contributions, improvements or issue reports are always welcomed.
