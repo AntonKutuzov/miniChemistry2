@@ -116,7 +116,7 @@ class ReactionCalculator:
         except WrongReactionConstructorParameters:
             raise InitializationError(init_type='reagents and products', variables=locals())
 
-    def _init_from_string(self, string: str) -> None:
+    def _init_from_string(self, reaction: str) -> None:
         try:
             if '->' in reaction or '=' in reaction:
                 reagents, products = MolecularReaction.extract_substances(reaction)

@@ -8,13 +8,15 @@ from time import sleep
 class SETTINGS:
     SHOW_EXECUTION_TIME: bool = True
     READ_TIME: float = 0 # seconds
+    NUMBER_OF_SIMPLE_EXERCISES: int = 5
+    NUMBER_OF_EXCESS_EXERCISES: int = 5
 
 
 class EXAMPLE_LIST:
     SIMPLE_EXERCISE: str = 'Ex1_Find_product_mass'
     COMPLICATED_EXERCISE: str = 'Ex2_Excess_and_limiting_reagent'
     EQUATING_REACTIONS: str = 'Ex3_Equate_Reactions'
-    # CREATING_EXERCISE: str = ''
+    CREATE_EXERCISES: str = 'Ex4_Creating_exercises'
 
 
 """
@@ -23,6 +25,10 @@ well with explanations on what is done and by which function. To make it
 possible to read by the user, the code execution is delayed. The variable
 'READ_TIME' in 'SETTINGS' gives time in seconds that each message "sleeps"
 before the code is ran further.
+
+In the CREATE_EXERCISES example there's no code delay. To control number of
+created exercises change the NUMBER_OF_SIMPLE_EXERCISES and 
+NUMBER_OF_EXCESS_EXERCISES variable in SETTINGS.
 
 To disable or change the time, run the following code in the console:
 >>> from EXAMPLES import SETTINGS
@@ -37,6 +43,7 @@ To run any example, use
 >>> run_example(EXAMPLE_LIST.EXAMPLE_NAME)
 
 The following examples are available:
+> CREATE_EXERCISES. A code snippet that shows how the code can be used to generate basic exercises in chemistry (including answers).
 > SIMPLE_EXERCISE. Quick presentation of how the code can be used to solve exercises in chemistry.
 > COMPLICATED_EXERCISE. Detailed explanation of how the code can be used to solve exercises in chemistry.
 For this example it is recommended to have prior knowledge of chemistry and structure of the package.
@@ -70,7 +77,7 @@ def run_example(
     file = Path(__file__).parent / f'_Code/{file_name}.py'
     example_number = file_name.strip('Ex').split('_')[0]
     if not file.exists():
-        raise Exception()
+        raise Exception(f'The file named "{file_name}" was not found. Sorry.')
 
     code = file.read_text()
     doc = code.strip('"""').split('"""')[0]

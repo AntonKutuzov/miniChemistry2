@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "minichemistry"
-version = "2.3.13"  # major refactoring . new features . big fixing
+version = "2.4.13"  # major refactoring . new features . big fixing
 requires-python = ">= 3.2"
 authors = [
     { name = "Antons Kutuzovs", email = "akutuzovsssss@gmail.com" }
